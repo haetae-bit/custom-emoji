@@ -1,0 +1,24 @@
+{
+  "name": "custom-emoji",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "lexicon:emit": "prototypey gen-emit ./lexicons ./src/utils/**/*.ts"
+  },
+  "dependencies": {
+    "@astrojs/node": "^9.5.0",
+    "@atproto/identity": "^0.4.9",
+    "@atproto/syntax": "^0.4.1",
+    "@fujocoded/authproto": "^0.1.2",
+    "astro": "^5.15.2",
+    "emoji-regex-xs": "^2.0.1",
+    "open-props": "^1.7.16"
+  },
+  "devDependencies": {
+    "prototypey": "^0.3.1"
+  }
+}

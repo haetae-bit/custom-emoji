@@ -1,0 +1,163 @@
+---
+import { actions, isInputError } from "astro:actions";
+import { AtUri } from "@atproto/syntax";
+import { getPdsAgent } from "@fujocoded/authproto/helpers";
+import emojiRegex from "emoji-regex-xs";
+
+const loggedInUser = Astro.locals.loggedInUser;
+if (!loggedInUser) {
+  return "Uh oh, you're not logged in!";
+}
+
+const agent = await getPdsAgent({ loggedInUser });
+const response = await agent?.com.atproto.repo.listRecords({
+  collection: "com.fujocoded.astrolabe.emojiset",
+  repo: loggedInUser.did,
+});
+const emojisets = response?.data.records ?? [];
+const list = (emojisets.length > 0) ? "emojisets" : undefined;
+
+const result = Astro.getActionResult(actions.addEmoji);
+const errors = isInputError(result?.error) ? result.error.fields : {};
+---
+<form action={actions.addEmoji} method="post" enctype="multipart/form-data" aria-errormessage={result?.error ? "form-error" : undefined}>
+  <fieldset>
+    <legend>Metadata</legend>
+
+    <div class="control">
+      <label for="shortcode">Shortcode</label>
+      <input type="text" name="shortcode" id="shortcode" aria-describedby="shortcode-note" aria-errormessage={errors.shortcode ? "shortcode-error" : undefined} required />
+      {errors.shortcode && (
+        <p id="shortcode-error">{errors.shortcode.join(",")}</p>
+      )}
+      <p id="shortcode-note">This should be in all-lowercase without spaces or special symbols</p>
+    </div>
+    
+    <div class="control">
+      <label for="fallback">Fallback</label>
+      <input type="text" name="fallback" id="fallback" pattern={emojiRegex().source} aria-describedby="fallback-note" aria-errormessage={errors.fallback ? "fallback-error" : undefined} required />
+      {errors.fallback && (
+        <p id="-error">{errors.fallback.join(",")}</p>
+      )}
+      <p id="fallback-note">Use standard emojis, like ❤️ or 😀</p>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Image</legend>
+
+    <div class="control">
+      <label for="image">Upload</label>
+      <input type="file" name="image" id="image" accept="image/*" aria-describedby="image-note" aria-errormessage={errors.image ? "image-error" : undefined} required />
+      {errors.image && (
+        <p id="image-error">{errors.image.join(",")}</p>
+      )}
+      <p id="image-note">Must use image files, such as ".png", ".webp", or ".svg"</p>
+    </div>
+
+    <div class="control">
+      <label for="alt">Alternative text</label>
+      <input type="text" name="alt" id="alt" aria-describedby="alt-note" aria-errormessage={errors.alt ? "alt-error" : undefined} required />
+      {errors.alt && (
+        <p id="alt-error">{errors.alt.join(",")}</p>
+      )}
+      <p id="alt-note">Describe what the emoji looks like for non-sighted users or when the image fails to load</p>
+    </div>
+
+    <div class="control">
+      <label for="description">Description</label>
+      <textarea name="description" id="description" aria-describedby="description-note" aria-errormessage={errors.description ? "description-error" : undefined} rows="2"></textarea>
+      {errors.description && (
+        <p id="description-error">{errors.description.join(",")}</p>
+      )}
+      <p id="description-note">Optional, you can write notes for what the emoji is supposed to convey</p>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Set</legend>
+
+    <div class="control">
+      <label for="collection">Name</label>
+      <input 
+        type="text" 
+        name="collection" id="collection" 
+        list={list} 
+        aria-controls={list} 
+        aria-describedby="collection-note" 
+        aria-expanded="false" 
+        aria-errormessage={errors.collection ? "collection-error" : undefined} 
+      />
+      {emojisets.length > 0 && (
+        <datalist id="emojisets">
+          {emojisets.map(set => {
+            const { rkey } = new AtUri(set.uri);
+            return (
+              <option value={rkey}>{rkey}</option>
+            );
+          })}
+        </datalist>
+      )}
+      {errors.collection && (
+        <p id="collection-error">{errors.collection.join(",")}</p>
+      )}
+      <p id="collection-note">You can either add to an existing emoji set or create a new one</p>
+    </div>
+    
+    <div class="control">
+      <label>
+        Want to add a source?
+        <input type="checkbox" name="sourceCheck" id="source-check" aria-controls="toggle-source" />
+      </label>
+    </div>
+    
+    <div id="toggle-source" class="control">
+      <label for="source">Source</label>
+      <input type="url" name="source" id="source" aria-describedby="source-note" aria-errormessage={errors.source ? "source-error" : undefined} />
+      {errors.source && (
+        <p id="source-error">{errors.source.join(",")}</p>
+      )}
+      <p id="source-note">Optional, this should be a valid URL to the artist's link or to the original source of the emoji set</p>
+    </div>
+    
+    <div class="control">
+      <label for="set-description">Description</label>
+      <textarea name="setDescription" id="set-description" rows="2" aria-errormessage={errors.setDescription ? "set-description-error" : undefined}></textarea>
+      {errors.setDescription && (
+        <p id="set-description-error">{errors.setDescription.join(",")}</p>
+      )}
+    </div>
+  </fieldset>
+
+  <button type="submit">Upload</button>
+  {result?.error && (
+    <p id="form-error">{result.error}</p>
+  )}
+</form>
+
+<style>
+  form {
+    display: flex;
+    flex-flow: column wrap;
+    gap: var(--size-4);
+  }
+  
+  fieldset {
+    display: flex;
+    flex-flow: column wrap;
+    gap: var(--size-3);
+    border: var(--border-size-2) solid var(--border-color);
+    border-radius: var(--radius-2);
+  }
+
+  .control {
+    display: flex;
+    flex-flow: column wrap;
+    gap: var(--size-1);
+  }
+
+  #toggle-source { display: none; }
+  .control:has(#source-check:checked) ~ #toggle-source { display: flex; }
+  p[id$="-note"] { color: var(--subtle-text); }
+  p[id$="-error"] { color: color-mix(in oklab, var(--red-8) 90%, var(--text)); }
+</style>

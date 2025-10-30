@@ -1,0 +1,28 @@
+{
+	"lexicon": 1,
+	"id": "com.fujocoded.astrolabe.emojiset",
+	"defs": {
+		"main": {
+			"type": "record",
+			"key": "self",
+			"record": {
+				"type": "object",
+				"properties": {
+					"emojis": {
+						"type": "array",
+						"items": {
+							"type": "ref",
+							"ref": "com.fujocoded.astrolabe.emoji"
+						}
+					},
+					"source": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					}
+				}
+			}
+		}
+	}
+}

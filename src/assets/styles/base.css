@@ -1,0 +1,104 @@
+@layer props, reset, variables;
+@import "open-props/style" layer(props);
+@import "./reset.css";
+@import "./variables.css";
+
+body {
+  background: var(--bg-gradient);
+  color: var(--text);
+  font-family: var(--body-font);
+  font-size: var(--font-size-3);
+}
+
+a {
+  color: var(--violet-12);
+  text-decoration: underline dotted currentColor var(--border-size-2);
+  text-underline-offset: var(--border-size-2);
+  transition: all 0.5s var(--ease-circ-in-out);
+
+  &:hover {
+    text-decoration-color: transparent;
+    text-underline-offset: var(--border-size-3);
+  }
+
+  @media screen and (prefers-reduced-motion: reduce) {
+    &:hover {
+      text-decoration-color: transparent;
+      text-underline-offset: var(--border-size-2);
+    }
+  }
+
+  @supports (background-clip: text) {
+    background-image: linear-gradient(to bottom, var(--violet-12), var(--pink-9));
+    background-clip: text;
+    color: transparent;
+    padding-bottom: var(--border-size-2);
+    border-bottom: var(--border-size-2) dotted var(--pink-9);
+    transition: all .5s var(--ease-circ-in-out);
+
+    &:hover {
+      padding-bottom: var(--border-size-3);
+      border-color: transparent;
+    }
+
+    @media screen and (prefers-reduced-motion: reduce) {
+      &:hover {
+        padding-bottom: var(--border-size-2);
+        border-color: transparent;
+      }
+    }
+  }
+}
+
+h1, h2, h3 {
+  font-family: var(--heading-font);
+  font-weight: normal;
+  max-inline-size: var(--size-header-3);
+}
+
+h1 { font-size: var(--font-size-7); }
+h2 { font-size: var(--font-size-6); }
+h3 { font-size: var(--font-size-5); }
+
+pre, code, kbd {
+  font-family: var(--code-font);
+}
+
+input, textarea, select {
+  background-color: var(--gray-0);
+  color: var(--text);
+  padding: 0.35rem 0.75rem;
+  border: var(--border-size-2) solid var(--border-color);
+  border-radius: var(--radius-2);
+  accent-color: var(--accent);
+}
+
+input:not([type="text"], [type="url"]), select {
+  cursor: pointer;
+}
+
+button, input[type="submit"], input[type="button"], input[type="reset"] {
+  --button-color: var(--primary);
+  background-color: var(--button-color);
+  color: var(--text);
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-2);
+  box-shadow: 0 var(--size-1) color-mix(in oklab, var(--button-color) 80%, var(--gray-12));
+  transform: translateY(calc(var(--size-1) * -1));
+  transition: all .5s var(--ease-bounce-2);
+
+  &:hover {
+    background-color: color-mix(in oklab, var(--button-color) 92%, var(--gray-12));
+    box-shadow: 0 0.2rem color-mix(in oklab, var(--button-color) 75%, var(--gray-12));
+    transform: translateY(calc((var(--size-1) * -1) + 0.05rem));
+  }
+
+  &:active {
+    box-shadow: 0 0 transparent;
+    transform: translateY(0);
+  }
+
+  @media screen and (prefers-reduced-motion: reduce) {
+    transition: all .5s var(--ease-2);
+  }
+}

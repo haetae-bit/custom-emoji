@@ -1,0 +1,165 @@
+---
+import { Image } from "astro:assets";
+import { IdResolver } from "@atproto/identity";
+import { AtUri } from "@atproto/syntax";
+import { getPdsAgent } from "@fujocoded/authproto/helpers";
+import type { Emoji } from "../utils/emojis";
+
+const loggedInUser = Astro.locals.loggedInUser;
+const TEST_HANDLE = "essentialrandom.bsky.social";
+
+const user = loggedInUser ? loggedInUser.did : TEST_HANDLE;
+const agent = await getPdsAgent(loggedInUser ? { loggedInUser } : { didOrHandle: TEST_HANDLE });
+const response = await agent?.com.atproto.repo.listRecords({
+	repo: user,
+	collection: "com.fujocoded.astrolabe.emojiset",
+});
+
+const ID_RESOLVER = new IdResolver();
+let did: string;
+if (!user.startsWith("did:")) {
+  const resolvedDid = await ID_RESOLVER.handle.resolve(user);
+  did = resolvedDid!;
+} else {
+  did = user;
+}
+const atproto = await ID_RESOLVER.did.resolveAtprotoData(did);
+const pdsUrl = atproto.pds;
+
+const emojisets = response?.data.records ?? [];
+---
+<h1>Custom Emojis</h1>
+{emojisets.length === 0 && <p>No emojis yet... go upload some!!</p>}
+
+{emojisets.map(async ({ uri, value }) => {
+  const { rkey } = new AtUri(uri);
+  const emojis = (value.emojis as Emoji[]);
+  return (
+    <section class="emojiset" id={rkey}>
+      <header>
+        <h2 class="title">{rkey}</h2>
+        {loggedInUser && (
+          <form action={`https://pdsls.dev/${uri}`}>
+            <button type="submit">Edit</button>
+          </form>
+        )}
+      </header>
+      
+      {value.source && (
+        <aside class="source">
+          <h3>Source</h3>
+          <p><a href={value.source as string} target="_blank" rel="noopener noreferrer">{value.source}</a></p>
+        </aside>
+      )}
+      
+      {value.description && (
+        <aside>
+          <h3>Description</h3>
+          <p>{value.description}</p>
+        </aside>
+      )}
+      
+      <section>
+        <h3>Emojis</h3>
+        <section class="emojis">
+          {emojis.length === 0 && <p>No emojis yet... you should upload some!</p>}
+          
+          {emojis.map(emoji => {
+            const url = new URL("/xrpc/com.atproto.sync.getBlob", pdsUrl);
+            url.searchParams.set("did", did);
+            // @ts-expect-error the type is expecting a blob when the result is actually a ref here
+            url.searchParams.set("cid", emoji.image?.image.ref);
+            return (
+              <article class="card">
+                <Image src={url.toString()} alt={emoji.image?.alt ?? emoji.fallback} inferSize={true} />
+                <pre>:{emoji.shortcode}:</pre>
+                <p>{emoji.description ?? emoji.fallback}</p>
+              </article>
+            );
+          })}
+        </section>
+      </section>
+    </section> 
+  );
+})}
+
+<section class="preview">
+  <h2>Preview</h2>
+  {/* <select name="changeSet" id="change-set">
+    {emojisets.map(({ uri }) => {
+      const { rkey } = new AtUri(uri);
+      return (
+        <option value={rkey}>{rkey}</option>
+      )
+    })}
+  </select> */}
+  <iframe title="Preview window for Astrolabe" src="https://astrolabe-editor.netlify.app/iframe.html?args=&globals=&id=astrolabe-emoji--editable&viewMode=story"></iframe>
+</section>
+
+<style>
+  h1 { margin-bottom: var(--size-4); }
+
+  .emojiset {
+    display: flex;
+    flex-flow: column wrap;
+    gap: var(--size-3);
+
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: baseline;
+      
+      .title {
+        text-align: center;
+        margin-inline: auto;
+        border-bottom: var(--border-size-2) solid var(--border-color);
+      }
+    }
+
+    .source {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+  }
+
+  .emojis {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--size-2);
+  }
+
+  .card {
+    display: flex;
+    flex-flow: column wrap;
+    gap: var(--size-1);
+    padding: var(--size-2);
+    text-align: center;
+
+    pre {
+      background-color: color-mix(in oklab, var(--secondary) 50%, transparent);
+      border-radius: var(--radius-2);
+    }
+
+    img {
+      align-self: center;
+      height: auto;
+      margin: 0 auto;
+    }
+  }
+
+  .preview {
+    display: flex;
+    flex-flow: column wrap;
+    gap: var(--size-1);
+    margin-top: var(--size-4);
+
+    iframe {
+      flex: 1;
+      width: 100%;
+      border: none;
+      min-height: 220px;
+    }
+  }
+</style>

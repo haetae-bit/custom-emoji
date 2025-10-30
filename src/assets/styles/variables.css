@@ -1,0 +1,20 @@
+@layer variables {
+  :root {
+    --body-font: var(--galmuri);
+    --heading-font: var(--dotgothic);
+    --code-font: var(--galmurimono);
+
+    /* colors */
+    --surface-100: var(--purple-0);
+    --surface-200: color-mix(in oklab, var(--surface-100) 90%, var(--gray-10));
+    --surface-300: color-mix(in oklab, var(--surface-100) 80%, var(--gray-10));
+    --bg-gradient: var(--gradient-15) no-repeat center / cover;
+    --dark-bg-gradient: var(--violet-12) var(--gradient-1) no-repeat center / cover;
+    --text: var(--gray-9);
+    --subtle-text: color-mix(in oklab, var(--text) 75%, var(--surface-100));
+    --primary: var(--violet-2);
+    --secondary: var(--red-2);
+    --accent: var(--teal-2);
+    --border-color: color-mix(in oklab, var(--text) 20%, transparent);
+  }
+}

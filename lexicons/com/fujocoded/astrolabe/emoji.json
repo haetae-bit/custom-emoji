@@ -1,0 +1,48 @@
+{
+	"lexicon": 1,
+	"id": "com.fujocoded.astrolabe.emoji",
+	"defs": {
+		"main": {
+			"type": "object",
+			"properties": {
+				"image": {
+					"type": "object",
+					"properties": {
+						"image": {
+							"type": "blob",
+							"accept": [
+								"image/*"
+							],
+							"maxSize": 100000,
+							"required": true
+						},
+						"alt": {
+							"type": "string",
+							"required": true
+						}
+					},
+					"required": [
+						"image",
+						"alt"
+					]
+				},
+				"shortcode": {
+					"type": "string",
+					"required": true
+				},
+				"description": {
+					"type": "string"
+				},
+				"fallback": {
+					"type": "string",
+					"required": true
+				}
+			},
+			"required": [
+				"image",
+				"shortcode",
+				"fallback"
+			]
+		}
+	}
+}
