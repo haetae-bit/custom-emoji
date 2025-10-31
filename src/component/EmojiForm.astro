@@ -2,7 +2,7 @@
 import { actions, isInputError } from "astro:actions";
 import { AtUri } from "@atproto/syntax";
 import { getPdsAgent } from "@fujocoded/authproto/helpers";
-import emojiRegex from "emoji-regex-xs";
+import { safecode } from "../utils/types";
 
 const loggedInUser = Astro.locals.loggedInUser;
 if (!loggedInUser) {
@@ -26,7 +26,7 @@ const errors = isInputError(result?.error) ? result.error.fields : {};
 
     <div class="control">
       <label for="shortcode">Shortcode</label>
-      <input type="text" name="shortcode" id="shortcode" aria-describedby="shortcode-note" aria-errormessage={errors.shortcode ? "shortcode-error" : undefined} required />
+      <input type="text" name="shortcode" id="shortcode" pattern={safecode.source} aria-describedby="shortcode-note" aria-errormessage={errors.shortcode ? "shortcode-error" : undefined} required />
       {errors.shortcode && (
         <p id="shortcode-error">{errors.shortcode.join(",")}</p>
       )}
@@ -35,9 +35,9 @@ const errors = isInputError(result?.error) ? result.error.fields : {};
     
     <div class="control">
       <label for="fallback">Fallback</label>
-      <input type="text" name="fallback" id="fallback" pattern={emojiRegex().source} aria-describedby="fallback-note" aria-errormessage={errors.fallback ? "fallback-error" : undefined} required />
+      <input type="text" name="fallback" id="fallback" aria-describedby="fallback-note" aria-errormessage={errors.fallback ? "fallback-error" : undefined} required />
       {errors.fallback && (
-        <p id="-error">{errors.fallback.join(",")}</p>
+        <p id="fallback-error">{errors.fallback.join(",")}</p>
       )}
       <p id="fallback-note">Use standard emojis, like ❤️ or 😀</p>
     </div>
@@ -48,6 +48,7 @@ const errors = isInputError(result?.error) ? result.error.fields : {};
 
     <div class="control">
       <label for="image">Upload</label>
+      <div id="preview"></div>
       <input type="file" name="image" id="image" accept="image/*" aria-describedby="image-note" aria-errormessage={errors.image ? "image-error" : undefined} required />
       {errors.image && (
         <p id="image-error">{errors.image.join(",")}</p>
@@ -82,6 +83,7 @@ const errors = isInputError(result?.error) ? result.error.fields : {};
       <input 
         type="text" 
         name="collection" id="collection" 
+        pattern={safecode.source} 
         list={list} 
         aria-controls={list} 
         aria-describedby="collection-note" 
@@ -156,8 +158,46 @@ const errors = isInputError(result?.error) ? result.error.fields : {};
     gap: var(--size-1);
   }
 
-  #toggle-source { display: none; }
-  .control:has(#source-check:checked) ~ #toggle-source { display: flex; }
+  #preview {
+    align-self: center;
+    img { object-fit: contain; }
+  }
+
+  #toggle-source {
+    opacity: 0;
+    height: 0;
+    margin-top: calc(var(--size-4) * -1);
+  }
+
+  .control:has(#source-check:checked) ~ #toggle-source {
+    opacity: 1;
+    height: max-content;
+    margin-top: unset;
+  }
+
   p[id$="-note"] { color: var(--subtle-text); }
   p[id$="-error"] { color: color-mix(in oklab, var(--red-8) 90%, var(--text)); }
 </style>
+
+<script>
+  import { IMAGE_TYPES } from "../utils/types";
+  const input = document.getElementById("image") as HTMLInputElement;
+  const preview = document.getElementById("preview");
+
+  input.addEventListener("change", (e) => {
+    while (preview?.firstChild) {
+      preview.removeChild(preview.firstChild);
+    }
+
+    const target = e.target as HTMLInputElement;
+    const file = target.files?.item(0);
+    
+    if (file && IMAGE_TYPES.includes(file.type)) {
+      const image = document.createElement("img");
+      image.src = URL.createObjectURL(file);
+      image.onload = () => URL.revokeObjectURL(image.src);
+      image.alt = file.name;
+      preview?.appendChild(image);
+    }
+  });
+</script>

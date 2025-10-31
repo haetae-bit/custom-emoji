@@ -15,7 +15,6 @@
     "@atproto/syntax": "^0.4.1",
     "@fujocoded/authproto": "^0.1.2",
     "astro": "^5.15.2",
-    "emoji-regex-xs": "^2.0.1",
     "open-props": "^1.7.16"
   },
   "devDependencies": {

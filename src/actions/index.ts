@@ -1,24 +1,17 @@
 import { getPdsAgent } from "@fujocoded/authproto/helpers";
 import { ActionError, defineAction } from "astro:actions";
 import { z } from "astro:schema";
-import type { Emoji, EmojiSet } from "../utils/emojis";
-
-const IMAGE_TYPES = [
-  "image/png",
-  "image/jpeg",
-  "image/jpg",
-  "image/svg+xml",
-  "image/gif",
-];
+import { type Emoji, type EmojiSet, emoji as emojiSchema, emojiSet as emojiSetSchema } from "../utils/emojis";
+import { IMAGE_TYPES, safecode } from "../utils/types";
 
 export const server = {
   addEmoji: defineAction({
     accept: "form",
     input: z.object({
-      collection: z.string(),
+      collection: z.string().regex(safecode),
       source: z.string().url().optional(),
       setDescription: z.string().optional(),
-      shortcode: z.string(),
+      shortcode: z.string().regex(safecode),
       image: z.instanceof(File).refine(file => IMAGE_TYPES.includes(file.type), {
         message: "Must be an image file!",
       }),
@@ -43,8 +36,6 @@ export const server = {
         });
       }
       
-      // slugify the collection here to use as rkey
-
       const blob = await agent.com.atproto.repo.uploadBlob(imageFile);
       if (!blob.success) {
         throw new ActionError({
@@ -65,30 +56,46 @@ export const server = {
         fallback,
       };
 
+      // const checkEmoji = emojiSchema.validate(emoji);
+      // if (!checkEmoji.success) {
+      //   throw new ActionError({
+      //     code: "BAD_REQUEST",
+      //     message: "Emoji is not formatted correctly!",
+      //   });
+      // }
+
       let emojis: Emoji[] = [];
       try {
-        const findEmojiSet = await agent.com.atproto.repo.getRecord({
+        const response = await agent.com.atproto.repo.getRecord({
           collection: "com.fujocoded.astrolabe.emojiset",
           repo: loggedInUser.did,
           rkey: collection,
         });
-        emojis = findEmojiSet.data.value.emojis as any[];
+        emojis = response.data.value.emojis as any[];
       } catch (error) {
         console.error("just make it up!");
       }
       
-      const set: EmojiSet = {
+      const emojiSet: EmojiSet = {
         $type: "com.fujocoded.astrolabe.emojiset",
         emojis: [...(emojis), emoji],
         source,
         description: setDescription,
       }
+
+      // const checkEmojiSet = emojiSetSchema.validate(emojiSet);
+      // if (!checkEmojiSet.success) {
+      //   throw new ActionError({
+      //     code: "BAD_REQUEST",
+      //     message: "Emoji set is not formatted correctly!",
+      //   });
+      // }
       
       const response = await agent.com.atproto.repo.putRecord({
         collection: "com.fujocoded.astrolabe.emojiset",
         repo: loggedInUser.did,
         rkey: collection,
-        record: set,
+        record: emojiSet,
       });
 
       if (!response.success) {
