@@ -14,8 +14,8 @@ const response = await agent?.com.atproto.repo.listRecords({
   collection: "com.fujocoded.astrolabe.emojiset",
   repo: loggedInUser.did,
 });
-const emojisets = response?.data.records ?? [];
-const list = (emojisets.length > 0) ? "emojisets" : undefined;
+const emojiSets = response?.data.records ?? [];
+const list = (emojiSets.length > 0) ? "emoji-sets" : undefined;
 
 const result = Astro.getActionResult(actions.addEmoji);
 const errors = isInputError(result?.error) ? result.error.fields : {};
@@ -84,15 +84,14 @@ const errors = isInputError(result?.error) ? result.error.fields : {};
         type="text" 
         name="collection" id="collection" 
         pattern={safecode.source} 
-        list={list} 
-        aria-controls={list} 
+        list={list} aria-controls={list} 
         aria-describedby="collection-note" 
-        aria-expanded="false" 
         aria-errormessage={errors.collection ? "collection-error" : undefined} 
+        aria-expanded="false" 
       />
-      {emojisets.length > 0 && (
-        <datalist id="emojisets">
-          {emojisets.map(set => {
+      {emojiSets.length > 0 && (
+        <datalist id="emoji-sets">
+          {emojiSets.map(set => {
             const { rkey } = new AtUri(set.uri);
             return (
               <option value={rkey}>{rkey}</option>
@@ -139,6 +138,7 @@ const errors = isInputError(result?.error) ? result.error.fields : {};
 
 <style>
   form {
+    margin-top: var(--size-2);
     display: flex;
     flex-flow: column wrap;
     gap: var(--size-4);
@@ -150,6 +150,7 @@ const errors = isInputError(result?.error) ? result.error.fields : {};
     gap: var(--size-3);
     border: var(--border-size-2) solid var(--border-color);
     border-radius: var(--radius-2);
+    overflow: auto;
   }
 
   .control {
@@ -165,13 +166,16 @@ const errors = isInputError(result?.error) ? result.error.fields : {};
 
   #toggle-source {
     opacity: 0;
+    width: 0;
     height: 0;
     margin-top: calc(var(--size-4) * -1);
+    overflow: hidden;
   }
 
   .control:has(#source-check:checked) ~ #toggle-source {
     opacity: 1;
-    height: max-content;
+    width: fit-content;
+    height: fit-content;
     margin-top: unset;
   }
 

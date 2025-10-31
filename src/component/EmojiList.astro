@@ -26,20 +26,20 @@ if (!user.startsWith("did:")) {
 const atproto = await ID_RESOLVER.did.resolveAtprotoData(did);
 const pdsUrl = atproto.pds;
 
-const emojisets = response?.data.records ?? [];
+const emojiSets = response?.data.records ?? [];
 ---
 <h1>Custom Emojis</h1>
-{emojisets.length === 0 && <p>No emojis yet... go upload some!!</p>}
+{emojiSets.length === 0 && <p>No emojis yet... go upload some!!</p>}
 
-{emojisets.map(async ({ uri, value }) => {
+{emojiSets.map(async ({ uri, value }) => {
   const { rkey } = new AtUri(uri);
   const emojis = (value.emojis as Emoji[]);
   return (
-    <section class="emojiset" id={rkey}>
+    <section class="emoji-set" id={rkey}>
       <header>
         <h2 class="title">{rkey}</h2>
         {loggedInUser && (
-          <form action={`https://pdsls.dev/${uri}`}>
+          <form action={`https://pdsls.dev/${uri}`} target="_blank">
             <button type="submit">Edit</button>
           </form>
         )}
@@ -99,7 +99,7 @@ const emojisets = response?.data.records ?? [];
 <style>
   h1 { margin-bottom: var(--size-4); }
 
-  .emojiset {
+  .emoji-set {
     display: flex;
     flex-flow: column wrap;
     gap: var(--size-3);
@@ -113,7 +113,7 @@ const emojisets = response?.data.records ?? [];
       .title {
         text-align: center;
         margin-inline: auto;
-        border-bottom: var(--border-size-2) solid var(--border-color);
+        border-bottom: var(--border-size-2) dotted var(--surface-300);
       }
     }
 
@@ -126,7 +126,7 @@ const emojisets = response?.data.records ?? [];
 
   .emojis {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: var(--size-2);
   }
 
@@ -135,6 +135,9 @@ const emojisets = response?.data.records ?? [];
     flex-flow: column wrap;
     gap: var(--size-1);
     padding: var(--size-2);
+    background-color: var(--gray-0);
+    border-radius: var(--radius-2);
+    box-shadow: var(--shadow-2);
     text-align: center;
 
     pre {
@@ -146,6 +149,10 @@ const emojisets = response?.data.records ?? [];
       align-self: center;
       height: auto;
       margin: 0 auto;
+      object-fit: cover;
+      object-position: center;
+      aspect-ratio: var(--ratio-square);
+      border-radius: var(--radius-1);
     }
   }
 

@@ -29,11 +29,12 @@ a {
   }
 
   @supports (background-clip: text) {
-    background-image: linear-gradient(to bottom, var(--violet-12), var(--pink-9));
+    background: var(--dark-bg-gradient);
+    background-blend-mode: soft-light;
     background-clip: text;
     color: transparent;
     padding-bottom: var(--border-size-2);
-    border-bottom: var(--border-size-2) dotted var(--pink-9);
+    border-bottom: var(--border-size-2) dotted var(--violet-12);
     transition: all .5s var(--ease-circ-in-out);
 
     &:hover {

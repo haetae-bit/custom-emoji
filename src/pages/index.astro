@@ -25,10 +25,16 @@ const loggedInUser = Astro.locals.loggedInUser;
 
 	<main>
 		<EmojiList server:defer>
-			<p slot="fallback">Loading...</p>
+			<div slot="fallback">
+				<div id="loader">
+					<div class="heart">♥</div>
+					<p>Loading...</p>
+				</div>
+			</div>
 		</EmojiList>
-
+		
 		{loggedInUser && (
+			<hr />
 			<h1>Make a new emoji</h1>
 			<EmojiForm />
 		)}
@@ -38,8 +44,8 @@ const loggedInUser = Astro.locals.loggedInUser;
 <style>
 	main {
 		max-width: 80ch;
-		margin: var(--size-3) auto;
-		padding: var(--size-4);
+		margin: calc(var(--size-9) * -1) auto 0;
+		padding: var(--size-9) var(--size-4) var(--size-6);
 		background-color: var(--surface-100);
 	}
 
@@ -67,6 +73,44 @@ const loggedInUser = Astro.locals.loggedInUser;
 			button {
 				position: relative;
 				top: 2px;
+			}
+		}
+	}
+
+	hr {
+		margin: var(--size-8) auto var(--size-6);
+		color: color-mix(in oklch shorter hue, var(--accent) 75%, var(--text));
+		height: auto;
+		border: none;
+		text-align: center;
+
+		&:after {
+			display: inline-block;
+			content: "★";
+			text-shadow:
+				-4em 0,
+				-2em 0,
+				2em 0,
+				4em 0;
+		}
+	}
+
+	#loader {
+		display: grid;
+		place-content: center;
+
+		.heart {
+			color: var(--secondary);
+			font-size: calc(var(--font-size-1) * 4);
+			animation: var(--animation-pulse);
+			max-width: max-content;
+			margin-inline: auto;
+
+			@supports (background-clip: text) {
+				color: transparent;
+				background: var(--dark-bg-gradient);
+				background-blend-mode: soft-light;
+				background-clip: text;
 			}
 		}
 	}
