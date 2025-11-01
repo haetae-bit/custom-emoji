@@ -101,7 +101,7 @@ const emojiSets = response?.data.records ?? [];
 
   .emoji-set {
     display: flex;
-    flex-flow: column wrap;
+    flex-flow: column nowrap;
     gap: var(--size-3);
 
     header {
@@ -121,6 +121,7 @@ const emojiSets = response?.data.records ?? [];
       display: flex;
       justify-content: space-between;
       align-items: baseline;
+      gap: var(--size-3);
     }
   }
 
