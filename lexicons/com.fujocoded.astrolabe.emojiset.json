@@ -4,24 +4,31 @@
 	"defs": {
 		"main": {
 			"type": "record",
-			"key": "self",
+			"key": "record-key",
 			"record": {
 				"type": "object",
 				"properties": {
 					"emojis": {
 						"type": "array",
 						"items": {
-							"type": "ref",
-							"ref": "com.fujocoded.astrolabe.emoji"
-						}
+							"type": "union",
+							"refs": [
+								"com.fujocoded.astrolabe.emoji"
+							]
+						},
+						"required": true
 					},
-					"source": {
-						"type": "string"
+					"sourceUri": {
+						"type": "string",
+						"format": "uri"
 					},
 					"description": {
 						"type": "string"
 					}
-				}
+				},
+				"required": [
+					"emojis"
+				]
 			}
 		}
 	}

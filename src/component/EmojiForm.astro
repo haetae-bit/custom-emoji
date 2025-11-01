@@ -30,16 +30,16 @@ const errors = isInputError(result?.error) ? result.error.fields : {};
       {errors.shortcode && (
         <p id="shortcode-error">{errors.shortcode.join(",")}</p>
       )}
-      <p id="shortcode-note">This should be in all-lowercase without spaces or special symbols</p>
+      <p id="shortcode-note">Must start and end with a lowercase English letter or number, no spaces are allowed, but you can use dash (<code>-</code>) or underscore (<code>_</code>)</p>
     </div>
     
     <div class="control">
       <label for="fallback">Fallback</label>
-      <input type="text" name="fallback" id="fallback" aria-describedby="fallback-note" aria-errormessage={errors.fallback ? "fallback-error" : undefined} required />
+      <input type="text" name="fallback" id="fallback" aria-describedby="fallback-note" aria-errormessage={errors.fallback ? "fallback-error" : undefined} />
       {errors.fallback && (
         <p id="fallback-error">{errors.fallback.join(",")}</p>
       )}
-      <p id="fallback-note">Use standard emojis, like ❤️ or 😀</p>
+      <p id="fallback-note">In case an app doesn't support custom emojis, use standard emojis (like ❤️ or 😀) as a fallback</p>
     </div>
   </fieldset>
 
@@ -49,7 +49,10 @@ const errors = isInputError(result?.error) ? result.error.fields : {};
     <div class="control">
       <label for="image">Upload</label>
       <div id="preview"></div>
-      <input type="file" name="image" id="image" accept="image/*" aria-describedby="image-note" aria-errormessage={errors.image ? "image-error" : undefined} required />
+      <div id="image-upload">
+        <input type="file" name="image" id="image" accept="image/*" aria-describedby="image-note" aria-errormessage={errors.image ? "image-error" : undefined} required />
+        <button id="image-reset" type="button">Clear</button>
+      </div>
       {errors.image && (
         <p id="image-error">{errors.image.join(",")}</p>
       )}
@@ -58,7 +61,7 @@ const errors = isInputError(result?.error) ? result.error.fields : {};
 
     <div class="control">
       <label for="alt">Alternative text</label>
-      <input type="text" name="alt" id="alt" aria-describedby="alt-note" aria-errormessage={errors.alt ? "alt-error" : undefined} required />
+      <input type="text" name="alt" id="alt" aria-describedby="alt-note" aria-errormessage={errors.alt ? "alt-error" : undefined} />
       {errors.alt && (
         <p id="alt-error">{errors.alt.join(",")}</p>
       )}
@@ -83,7 +86,7 @@ const errors = isInputError(result?.error) ? result.error.fields : {};
       <input 
         type="text" 
         name="collection" id="collection" 
-        pattern={safecode.source} 
+        pattern="^[a-zA-Z0-9_~.:-]{1,512}$" 
         list={list} aria-controls={list} 
         aria-describedby="collection-note" 
         aria-errormessage={errors.collection ? "collection-error" : undefined} 
@@ -108,17 +111,17 @@ const errors = isInputError(result?.error) ? result.error.fields : {};
     <div class="control">
       <label>
         Want to add a source?
-        <input type="checkbox" name="sourceCheck" id="source-check" aria-controls="toggle-source" />
+        <input type="checkbox" name="sourceCheck" id="source-check" aria-controls="source-toggle" />
       </label>
     </div>
     
-    <div id="toggle-source" class="control">
+    <div id="source-toggle" class="control">
       <label for="source">Source</label>
       <input type="url" name="source" id="source" aria-describedby="source-note" aria-errormessage={errors.source ? "source-error" : undefined} />
       {errors.source && (
         <p id="source-error">{errors.source.join(",")}</p>
       )}
-      <p id="source-note">Optional, this should be a valid URL to the artist's link or to the original source of the emoji set</p>
+      <p id="source-note">Optional, this can be a valid URL to the artist or original source of the emoji set</p>
     </div>
     
     <div class="control">
@@ -147,12 +150,14 @@ const errors = isInputError(result?.error) ? result.error.fields : {};
   
   fieldset {
     display: flex;
-    flex: 0 1 auto;
     flex-flow: column nowrap;
     gap: var(--size-3);
-    min-width: 0;
     border: var(--border-size-2) solid var(--border-color);
     border-radius: var(--radius-2);
+
+    legend {
+      padding-inline: var(--size-2);
+    }
   }
 
   .control {
@@ -160,25 +165,71 @@ const errors = isInputError(result?.error) ? result.error.fields : {};
     grid-auto-flow: row;
     gap: var(--size-1);
     
-    > * {
-      max-width: calc(100cqw - (var(--size-3) * 2) - var(--border-size-2));
+    > :is(label, input, p) {
+      width: 100%;
       contain: layout inline-size;
     }
   }
 
   #preview {
+    display: flex;
     align-self: center;
+    justify-content: center;
+    max-height: 100px;
+    
     img { object-fit: contain; }
   }
 
-  #toggle-source {
+  #image-upload {
+    display: flex;
+    gap: var(--size-2);
+
+    input[type="file"] {
+      width: 100%;
+
+      &::file-selector-button {
+        --button-color: var(--accent);
+        font: inherit;
+        background-color: var(--button-color);
+        padding: 0.35rem 0.75rem;
+        margin: -0.2rem 0.75rem -0.25rem -0.6rem;
+        border: none;
+        border-radius: var(--radius-2);
+        box-shadow: 0 var(--size-1) color-mix(in oklab, var(--button-color) 80%, var(--gray-12));
+        transform: translateY(calc(var(--size-1) * -1));
+        transition: all .5s var(--ease-bounce-2);
+      }
+    }
+
+    input[type="file"]::file-selector-button:hover {
+      background-color: color-mix(in oklab, var(--button-color) 92%, var(--gray-12));
+      box-shadow: 0 0.2rem color-mix(in oklab, var(--button-color) 75%, var(--gray-12));
+      transform: translateY(calc((var(--size-1) * -1) + 0.05rem));
+    }
+
+    input[type="file"]::file-selector-button:active {
+      box-shadow: 0 0 transparent;
+      transform: translateY(0);
+    }
+
+    @container (width < 560px) {
+      display: flex;
+      flex-flow: column nowrap;
+    }
+
+    @media screen and (prefers-reduced-motion: reduce) {
+      transition: all .5s var(--ease-2);
+    }
+  }
+
+  #source-toggle {
     opacity: 0;
     height: 0;
     margin-top: calc(var(--size-4) * -1);
     overflow: hidden;
   }
 
-  .control:has(#source-check:checked) ~ #toggle-source {
+  .control:has(#source-check:checked) ~ #source-toggle {
     opacity: 1;
     height: fit-content;
     margin-top: unset;
@@ -192,18 +243,11 @@ const errors = isInputError(result?.error) ? result.error.fields : {};
 <script>
   import { IMAGE_TYPES } from "../utils/types";
   const input = document.getElementById("image") as HTMLInputElement;
+  const reset = document.getElementById("image-reset") as HTMLButtonElement;
   const preview = document.getElementById("preview");
 
   input.addEventListener("change", (e) => {
-    while (preview?.firstChild) {
-      const image = preview.getElementsByTagName("img").item(0);
-      if (image) {
-        image.addEventListener("load", () => {
-          URL.revokeObjectURL(image.src);
-        }, { once: true });
-      }
-      preview.removeChild(preview.firstChild);
-    }
+    clearImage();
 
     const target = e.target as HTMLInputElement;
     const file = target.files?.item(0);
@@ -216,4 +260,22 @@ const errors = isInputError(result?.error) ? result.error.fields : {};
       preview?.appendChild(image);
     }
   });
+
+  reset.addEventListener("click", (e) => {
+    e.preventDefault();
+    input.value = "";
+    clearImage();
+  });
+
+  function clearImage() {
+    while (preview?.firstChild) {
+      const image = preview.getElementsByTagName("img").item(0);
+      if (image) {
+        image.addEventListener("load", () => {
+          URL.revokeObjectURL(image.src);
+        }, { once: true });
+      }
+      preview.removeChild(preview.firstChild);
+    }
+  }
 </script>

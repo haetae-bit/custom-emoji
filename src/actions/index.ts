@@ -3,21 +3,24 @@ import { ActionError, defineAction } from "astro:actions";
 import { z } from "astro:schema";
 import { type Emoji, type EmojiSet, emoji as emojiSchema, emojiSet as emojiSetSchema } from "../utils/emojis";
 import { IMAGE_TYPES, safecode } from "../utils/types";
+import { isValidRecordKey } from "@atproto/syntax";
 
 export const server = {
   addEmoji: defineAction({
     accept: "form",
     input: z.object({
-      collection: z.string().regex(safecode),
+      collection: z.string().refine(value => isValidRecordKey(value), {
+        message: "Not a valid name for emoji set!",
+      }),
       source: z.string().url().optional(),
       setDescription: z.string().optional(),
       shortcode: z.string().regex(safecode),
       image: z.instanceof(File).refine(file => IMAGE_TYPES.includes(file.type), {
         message: "Must be an image file!",
       }),
-      alt: z.string(),
+      alt: z.string().optional(),
       description: z.string().optional(),
-      fallback: z.string().emoji({ message: "Should be a valid emoji" }),
+      fallback: z.string().emoji({ message: "Should be a valid emoji" }).optional(),
     }),
     handler: async ({ collection, source, setDescription, shortcode, image: imageFile, alt, description, fallback }, context) => {
       const loggedInUser = context.locals.loggedInUser;
@@ -47,11 +50,11 @@ export const server = {
       const emoji: Emoji = {
         $type: "com.fujocoded.astrolabe.emoji",
         shortcode,
-        image: {
+        embeds: [{
           // @ts-ignore emoji type is weird here
           image: blob.data.blob,
-          alt,
-        },
+          alt: alt ?? "",
+        }],
         description,
         fallback,
       };
@@ -65,21 +68,23 @@ export const server = {
       // }
 
       let emojis: Emoji[] = [];
+      let existingEmojiSet;
       try {
-        const response = await agent.com.atproto.repo.getRecord({
+        existingEmojiSet = await agent.com.atproto.repo.getRecord({
           collection: "com.fujocoded.astrolabe.emojiset",
           repo: loggedInUser.did,
           rkey: collection,
         });
-        emojis = response.data.value.emojis as any[];
+        emojis = existingEmojiSet.data.value.emojis as any[];
       } catch (error) {
         console.error("just make it up!");
       }
       
       const emojiSet: EmojiSet = {
         $type: "com.fujocoded.astrolabe.emojiset",
+        // @ts-ignore for now
         emojis: [...(emojis), emoji],
-        source,
+        sourceUri: source,
         description: setDescription,
       }
 
@@ -92,11 +97,28 @@ export const server = {
       // }
       
       const response = await agent.com.atproto.repo.putRecord({
-        collection: "com.fujocoded.astrolabe.emojiset",
         repo: loggedInUser.did,
+        collection: emojiSetSchema.json.id,
         rkey: collection,
         record: emojiSet,
       });
+
+      // const response = await agent.com.atproto.repo.applyWrites({
+      //   repo: loggedInUser.did,
+      //   writes: [
+      //     {
+      //       $type: "com.atproto.repo.applyWrites#create",
+      //       collection: emojiSchema.json.id,
+      //       value: emoji
+      //     },
+      //     {
+      //       $type: (existingEmojiSet) ? "com.atproto.repo.applyWrites#update" : "com.atproto.repo.applyWrites#create",
+      //       collection: emojiSetSchema.json.id,
+      //       rkey: collection,
+      //       value: emojiSet,
+      //     }
+      //   ]
+      // });
 
       if (!response.success) {
         throw new ActionError({
@@ -106,6 +128,7 @@ export const server = {
       }
       
       return response.data.uri;
+      // return response.data.results;
     },
   }),
 }

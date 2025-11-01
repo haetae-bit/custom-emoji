@@ -67,13 +67,22 @@ const emojiSets = response?.data.records ?? [];
           {emojis.map(emoji => {
             const url = new URL("/xrpc/com.atproto.sync.getBlob", pdsUrl);
             url.searchParams.set("did", did);
-            // @ts-expect-error the type is expecting a blob when the result is actually a ref here
-            url.searchParams.set("cid", emoji.image?.image.ref);
+            if (emoji.embeds) {
+              // url.searchParams.set("cid", emoji.embeds[0].image.ref);
+              // @ts-expect-error the type is expecting a blob when the result is actually a ref here
+              url.searchParams.set("cid", emoji.embeds[0].ref);
+            } else {
+              // @ts-expect-error this is old behavior
+              url.searchParams.set("cid", emoji.image.image.ref);
+            }
+            // emoji.embeds[0].alt
             return (
               <article class="card">
-                <Image src={url.toString()} alt={emoji.image?.alt ?? emoji.fallback} inferSize={true} />
+                <Image src={url.toString()} alt={emoji.fallback ?? emoji.shortcode} inferSize={true} />
                 <pre>:{emoji.shortcode}:</pre>
-                <p>{emoji.description ?? emoji.fallback}</p>
+                {(emoji.description || emoji.fallback) && (
+                  <p>{emoji.description ?? emoji.fallback}</p>
+                )}
               </article>
             );
           })}
@@ -103,6 +112,7 @@ const emojiSets = response?.data.records ?? [];
     display: flex;
     flex-flow: column nowrap;
     gap: var(--size-3);
+    margin-bottom: var(--size-4);
 
     header {
       display: flex;
@@ -122,6 +132,12 @@ const emojiSets = response?.data.records ?? [];
       justify-content: space-between;
       align-items: baseline;
       gap: var(--size-3);
+    }
+
+    & > * {
+      display: grid;
+      grid-auto-flow: row;
+      gap: var(--size-1);
     }
   }
 
@@ -161,7 +177,6 @@ const emojiSets = response?.data.records ?? [];
     display: flex;
     flex-flow: column wrap;
     gap: var(--size-1);
-    margin-top: var(--size-4);
 
     iframe {
       flex: 1;

@@ -10,7 +10,7 @@ body {
   font-size: var(--font-size-3);
 }
 
-a {
+a:link {
   color: var(--violet-12);
   text-decoration: underline dotted currentColor var(--border-size-2);
   text-underline-offset: var(--border-size-2);
@@ -29,12 +29,11 @@ a {
   }
 
   @supports (background-clip: text) {
-    background: var(--dark-bg-gradient);
-    background-blend-mode: soft-light;
+    background-image: linear-gradient(to bottom, var(--violet-12), var(--pink-9));
     background-clip: text;
     color: transparent;
     padding-bottom: var(--border-size-2);
-    border-bottom: var(--border-size-2) dotted var(--violet-12);
+    border-bottom: var(--border-size-2) dotted var(--pink-9);
     transition: all .5s var(--ease-circ-in-out);
 
     &:hover {

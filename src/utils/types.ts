@@ -1,8 +1,10 @@
-export const safecode = new RegExp(/([a-z][-_]?){2,}/g);
+export const safecode = /^[a-z\d][a-z\d]*(?:-?_?[a-z\d]+)*$/;
 export const IMAGE_TYPES = [
+  "image/apng",
+  "image/avif",
   "image/png",
   "image/jpeg",
-  "image/jpg",
   "image/svg+xml",
   "image/gif",
+  "image/webp",
 ];
