@@ -5,23 +5,30 @@ import { type Emoji, type EmojiSet, emoji as emojiSchema, emojiSet as emojiSetSc
 import { IMAGE_TYPES, safecode } from "../utils/types";
 import { isValidRecordKey } from "@atproto/syntax";
 
+export const collectionSchema = z.object({
+  collection: z.string().refine(value => isValidRecordKey(value), {
+    message: "Not a valid name for emoji set!",
+  }),
+  source: z.string().url().optional(),
+  setDescription: z.string().optional(),
+});
+
+export const formSchema = z.object({
+  shortcode: z.string().regex(safecode),
+  image: z.instanceof(File).refine(file => IMAGE_TYPES.includes(file.type), {
+    message: "Must be an image file!",
+  }),
+  alt: z.string().optional(),
+  description: z.string().optional(),
+  fallback: z.string().emoji({ message: "Should be a valid emoji" }).optional(),
+});
+
+export const mergedSchema = formSchema.merge(collectionSchema);
+
 export const server = {
   addEmoji: defineAction({
     accept: "form",
-    input: z.object({
-      collection: z.string().refine(value => isValidRecordKey(value), {
-        message: "Not a valid name for emoji set!",
-      }),
-      source: z.string().url().optional(),
-      setDescription: z.string().optional(),
-      shortcode: z.string().regex(safecode),
-      image: z.instanceof(File).refine(file => IMAGE_TYPES.includes(file.type), {
-        message: "Must be an image file!",
-      }),
-      alt: z.string().optional(),
-      description: z.string().optional(),
-      fallback: z.string().emoji({ message: "Should be a valid emoji" }).optional(),
-    }),
+    input: mergedSchema,
     handler: async ({ collection, source, setDescription, shortcode, image: imageFile, alt, description, fallback }, context) => {
       const loggedInUser = context.locals.loggedInUser;
       if (!loggedInUser) {

@@ -28,7 +28,7 @@ export const emoji = lx.lexicon("com.fujocoded.astrolabe.emoji", {
 export const emojiSet = lx.lexicon("com.fujocoded.astrolabe.emojiset", {
   main: lx.record({
     // @ts-ignore TODO: fix this
-    key: "record-key",
+    key: "self",
     record: lx.object({
       emojis: lx.array(lx.union([lx.ref(emoji.json.id).ref]), { required: true }),
       // Where this emoji set was sourced from. May be a DID, a AtUri or a regular URL.

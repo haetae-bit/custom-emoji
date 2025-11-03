@@ -1,0 +1,103 @@
+---
+import { AtUri } from '@atproto/syntax';
+import EmojiList from './EmojiList.astro';
+import Loader from './Loader.astro';
+import type { Emoji, EmojiSet } from '../utils/emojis';
+
+interface Props {
+  emojiSet: EmojiSet;
+  user: string;
+  uri: string;
+}
+
+const { emojiSet, user, uri } = Astro.props;
+const loggedInUser = Astro.locals.loggedInUser;
+
+const { rkey } = new AtUri(uri);
+const emojis = emojiSet.emojis as Emoji[];
+---
+
+<section class="emoji-set" id={rkey}>
+  <header>
+    <h2 class="title">{rkey}</h2>
+    {loggedInUser && (
+      <form action={`https://pdsls.dev/${uri}`} target="_blank">
+        <button type="submit">Edit</button>
+      </form>
+    )}
+  </header>
+  
+  {emojiSet.sourceUri && (
+    <aside class="source">
+      <h3>Source</h3>
+      <p>
+        <a href={emojiSet.sourceUri} target="_blank" rel="noopener noreferrer">
+          {emojiSet.sourceUri}
+        </a>
+      </p>
+    </aside>
+  )}
+  
+  {emojiSet.description && (
+    <aside>
+      <h3>Description</h3>
+      <p>{emojiSet.description}</p>
+    </aside>
+  )}
+  
+  <section>
+    <h3>Emojis</h3>
+    <section class="emojis">
+      {emojis.length === 0 && <p>No emojis yet... you should upload some!</p>}
+      
+      {emojis.map(emoji => (
+        <EmojiList emoji={emoji} user={user} server:defer>
+          <div slot="fallback">
+            <Loader />
+          </div>
+        </EmojiList>
+      ))}
+    </section>
+  </section>
+</section>
+
+<style>
+  .emoji-set {
+    display: flex;
+    flex-flow: column nowrap;
+    gap: var(--size-3);
+    margin-bottom: var(--size-4);
+
+    & > :where(aside, section) {
+      display: grid;
+      grid-auto-flow: row;
+      gap: var(--size-1);
+    }
+
+    .source {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: var(--size-3);
+    } 
+  }
+
+  .emoji-set header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: baseline;
+    
+    .title {
+      text-align: center;
+      margin-inline: auto;
+      border-bottom: var(--border-size-2) dotted var(--surface-300);
+    }
+  }
+
+  .emojis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--size-2);
+  }
+</style>

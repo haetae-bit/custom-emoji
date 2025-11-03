@@ -1,0 +1,82 @@
+---
+import Layout from "../layouts/Layout.astro";
+import "open-props/masks/edges";
+
+const loggedInUser = Astro.locals.loggedInUser;
+---
+<Layout>
+	<header>
+		<span class="welcome">
+			{loggedInUser ? `Welcome ${loggedInUser.handle}!` : "Log in"}
+		</span>
+		{loggedInUser ? (
+			<form action="/oauth/logout" method="post" class="login">
+				<button>Logout</button>
+			</form>
+		) : (
+			<form action="/oauth/login" method="post" class="login">
+				<input type="text" name="atproto-id" autocomplete="username" required />
+				<button>Login</button>
+			</form>
+		)}
+	</header>
+
+	<main>
+		<slot />
+	</main>
+</Layout>
+
+<style>
+	main {
+		max-width: 80ch;
+		margin: calc(var(--size-9) * -1) auto 0;
+		padding: var(--size-9) var(--size-4) var(--size-6);
+		background-color: var(--surface-100);
+	}
+
+	header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		max-inline-size: var(--size-lg);
+		margin: 0 auto var(--size-3);
+		padding: var(--size-3) var(--size-3) var(--size-7);
+		background: var(--dark-bg-gradient);
+		background-blend-mode: soft-light;
+		mask: var(--mask-edge-scalloped-bottom);
+    container: header / inline-size;
+
+		.welcome {
+			font-family: var(--heading-font);
+			font-size: 2rem;
+      margin-left: var(--size-2);
+			color: white;
+		}
+
+		.login {
+			display: flex;
+			gap: var(--size-2);
+
+			button {
+				position: relative;
+				top: 2px;
+        
+        &:active { transition: none; }
+			}
+
+      @container (width < 32em) {
+        flex-direction: column;
+      }
+		}
+
+    @media screen and (max-width: 800px) {
+      flex-direction: column;
+      gap: var(--size-2);
+
+      .welcome { margin: 0; }
+      .login, .login input, .login :only-child {
+        width: 100%;
+      }
+    }
+	}
+</style>

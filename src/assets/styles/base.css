@@ -77,11 +77,12 @@ input:not([type="text"], [type="url"]), select {
   cursor: pointer;
 }
 
-button, input[type="submit"], input[type="button"], input[type="reset"] {
+button, input:where([type="submit"], [type="button"], [type="reset"]), input[type="file"]::file-selector-button {
   --button-color: var(--primary);
   background-color: var(--button-color);
   color: var(--text);
   padding: 0.35rem 0.75rem;
+  border: none;
   border-radius: var(--radius-2);
   box-shadow: 0 var(--size-1) color-mix(in oklab, var(--button-color) 80%, var(--gray-12));
   transform: translateY(calc(var(--size-1) * -1));
@@ -90,15 +91,37 @@ button, input[type="submit"], input[type="button"], input[type="reset"] {
   &:hover {
     background-color: color-mix(in oklab, var(--button-color) 92%, var(--gray-12));
     box-shadow: 0 0.2rem color-mix(in oklab, var(--button-color) 75%, var(--gray-12));
-    transform: translateY(calc((var(--size-1) * -1) + 0.05rem));
+    transform: translateY(calc((var(--size-1) * -1) + 0.1rem));
+    transition: all .5s var(--ease-cubic-in);
   }
 
   &:active {
     box-shadow: 0 0 transparent;
     transform: translateY(0);
+    transition: all .25s var(--ease-elastic-in-2);
   }
 
   @media screen and (prefers-reduced-motion: reduce) {
     transition: all .5s var(--ease-2);
+
+    &:active { transition: all .25s var(--ease-in-2); }
+  }
+}
+
+hr {
+  margin: var(--size-8) auto var(--size-6);
+  color: color-mix(in oklch shorter hue, var(--accent) 75%, var(--text));
+  height: auto;
+  border: none;
+  text-align: center;
+
+  &:after {
+    display: inline-block;
+    content: "★";
+    text-shadow:
+      -4em 0,
+      -2em 0,
+      2em 0,
+      4em 0;
   }
 }

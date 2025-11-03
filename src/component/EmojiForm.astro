@@ -39,7 +39,7 @@ const errors = isInputError(result?.error) ? result.error.fields : {};
       {errors.fallback && (
         <p id="fallback-error">{errors.fallback.join(",")}</p>
       )}
-      <p id="fallback-note">In case an app doesn't support custom emojis, use standard emojis (like ❤️ or 😀) as a fallback</p>
+      <p id="fallback-note">Use standard emojis (like ❤️ or 😀) as a fallback in case an app doesn't support custom emojis</p>
     </div>
   </fieldset>
 
@@ -185,41 +185,38 @@ const errors = isInputError(result?.error) ? result.error.fields : {};
     display: flex;
     gap: var(--size-2);
 
-    input[type="file"] {
-      width: 100%;
-
-      &::file-selector-button {
-        --button-color: var(--accent);
-        font: inherit;
-        background-color: var(--button-color);
-        padding: 0.35rem 0.75rem;
-        margin: -0.2rem 0.75rem -0.25rem -0.6rem;
-        border: none;
-        border-radius: var(--radius-2);
-        box-shadow: 0 var(--size-1) color-mix(in oklab, var(--button-color) 80%, var(--gray-12));
-        transform: translateY(calc(var(--size-1) * -1));
-        transition: all .5s var(--ease-bounce-2);
-      }
+    @container (width < 32em) {
+      display: flex;
+      flex-flow: column nowrap;
     }
+  }
 
-    input[type="file"]::file-selector-button:hover {
+  #image-upload input[type="file"] {
+    width: 100%;
+
+    &::file-selector-button {
+      --button-color: var(--accent);
+      font: inherit;
+      margin: -0.2rem 0.75rem -0.25rem -0.6rem;
+    }
+    
+    &::file-selector-button:hover {
       background-color: color-mix(in oklab, var(--button-color) 92%, var(--gray-12));
       box-shadow: 0 0.2rem color-mix(in oklab, var(--button-color) 75%, var(--gray-12));
       transform: translateY(calc((var(--size-1) * -1) + 0.05rem));
+      transition: all .5s var(--ease-cubic-in);
     }
 
-    input[type="file"]::file-selector-button:active {
+    &::file-selector-button:active {
       box-shadow: 0 0 transparent;
       transform: translateY(0);
-    }
-
-    @container (width < 560px) {
-      display: flex;
-      flex-flow: column nowrap;
+      transition: all .25s var(--ease-elastic-in-2);
     }
 
     @media screen and (prefers-reduced-motion: reduce) {
       transition: all .5s var(--ease-2);
+      
+      &::file-selector-button:active { transition: all .25s var(--ease-in-2); }
     }
   }
 
@@ -239,6 +236,21 @@ const errors = isInputError(result?.error) ? result.error.fields : {};
 
   p[id$="-note"] { color: var(--subtle-text); }
   p[id$="-error"] { color: color-mix(in oklab, var(--red-8) 90%, var(--text)); }
+  input:user-invalid {
+    accent-color: var(--secondary);
+    background-color: var(--secondary);
+    border-style: dashed;
+
+    & ~ p[id$="-note"] {
+      color: var(--text);
+
+      &::before {
+        display: inline-block;
+        content: "Warning:";
+        margin-right: var(--size-2);
+      }
+    }
+  }
 </style>
 
 <script>

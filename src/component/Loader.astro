@@ -1,0 +1,25 @@
+<div class="loader">
+  <div class="heart"></div>
+</div>
+
+<style>
+  .loader {
+		display: grid;
+		place-content: center;
+		
+		.heart {
+			color: var(--secondary);
+			font-size: calc(var(--font-size-1) * 4);
+			animation: var(--animation-pulse);
+			max-width: max-content;
+			margin-inline: auto;
+
+			@supports (background-clip: text) {
+				color: transparent;
+				background: var(--dark-bg-gradient);
+				background-blend-mode: soft-light;
+				background-clip: text;
+			}
+		}
+	}
+</style>

@@ -1,117 +1,66 @@
 ---
-import Layout from "../layouts/Layout.astro";
+import { getPdsAgent } from "@fujocoded/authproto/helpers";
+import Page from "../layouts/Page.astro";
 import EmojiForm from "../component/EmojiForm.astro";
-import EmojiList from "../component/EmojiList.astro";
-import "open-props/masks/edges";
+import EmojiSet from "../component/EmojiSet.astro";
+import Loader from "../component/Loader.astro";
+import type { EmojiSet as EmojiSetType } from "../utils/emojis";
 
 const loggedInUser = Astro.locals.loggedInUser;
----
-<Layout>
-	<header>
-		<span class="welcome">
-			{loggedInUser ? `Welcome ${loggedInUser.handle}!` : "Log in"}
-		</span>
-		{loggedInUser ? (
-			<form action="/oauth/logout" method="post" class="login">
-				<button>Logout</button>
-			</form>
-		) : (
-			<form action="/oauth/login" method="post" class="login">
-				<input type="text" name="atproto-id" autocomplete="username" required />
-				<button>Login</button>
-			</form>
-		)}
-	</header>
+const TEST_HANDLE = "essentialrandom.bsky.social";
 
-	<main>
-		<EmojiList server:defer>
+const user = loggedInUser ? loggedInUser.did : TEST_HANDLE;
+const agent = await getPdsAgent(loggedInUser ? { loggedInUser } : { didOrHandle: TEST_HANDLE });
+const response = await agent?.com.atproto.repo.listRecords({
+	repo: user,
+	collection: "com.fujocoded.astrolabe.emojiset",
+});
+
+const emojiSets = response?.data.records ?? [];
+---
+<Page>
+	<h1>Custom Emojis</h1>
+	{emojiSets.length === 0 && <p>No emojis yet... go upload some!!</p>}
+
+	{emojiSets.map(async ({ uri, value }) => (
+		<EmojiSet emojiSet={value as EmojiSetType} user={user} uri={uri} server:defer>
 			<div slot="fallback">
-				<div id="loader">
-					<div class="heart">♥</div>
-					<p>Loading...</p>
-				</div>
+				<Loader />
 			</div>
-		</EmojiList>
-		
-		{loggedInUser && (
-			<hr />
-			<h1>Make a new emoji</h1>
-			<EmojiForm />
-		)}
-	</main>
-</Layout>
+		</EmojiSet>
+	))}
+
+	<section class="preview">
+		<h2>Preview</h2>
+		{/* <select name="changeSet" id="change-set">
+			{emojisets.map(({ uri }) => {
+				const { rkey } = new AtUri(uri);
+				return (
+					<option value={rkey}>{rkey}</option>
+				)
+			})}
+		</select> */}
+		<iframe title="Preview window for Astrolabe" src="https://astrolabe-editor.netlify.app/iframe.html?args=&globals=&id=astrolabe-emoji--editable-multiple-sets&viewMode=story"></iframe>
+	</section>
+	
+	{loggedInUser && (
+		<hr />
+		<h1>Make a new emoji</h1>
+		<EmojiForm />
+	)}
+</Page>
 
 <style>
-	main {
-		max-width: 80ch;
-		margin: calc(var(--size-9) * -1) auto 0;
-		padding: var(--size-9) var(--size-4) var(--size-6);
-		background-color: var(--surface-100);
-	}
+	.preview {
+    display: flex;
+    flex-flow: column wrap;
+    gap: var(--size-1);
 
-	header {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		max-inline-size: var(--size-lg);
-		margin: 0 auto var(--size-3);
-		padding: var(--size-3) var(--size-3) var(--size-7);
-		background: var(--dark-bg-gradient);
-		background-blend-mode: soft-light;
-		mask: var(--mask-edge-scalloped-bottom);
-
-		.welcome {
-			font-family: var(--heading-font);
-			font-size: 2rem;
-			color: white;
-		}
-
-		.login {
-			display: flex;
-			gap: var(--size-2);
-
-			button {
-				position: relative;
-				top: 2px;
-			}
-		}
-	}
-
-	hr {
-		margin: var(--size-8) auto var(--size-6);
-		color: color-mix(in oklch shorter hue, var(--accent) 75%, var(--text));
-		height: auto;
-		border: none;
-		text-align: center;
-
-		&:after {
-			display: inline-block;
-			content: "★";
-			text-shadow:
-				-4em 0,
-				-2em 0,
-				2em 0,
-				4em 0;
-		}
-	}
-
-	#loader {
-		display: grid;
-		place-content: center;
-
-		.heart {
-			color: var(--secondary);
-			font-size: calc(var(--font-size-1) * 4);
-			animation: var(--animation-pulse);
-			max-width: max-content;
-			margin-inline: auto;
-
-			@supports (background-clip: text) {
-				color: transparent;
-				background: var(--dark-bg-gradient);
-				background-blend-mode: soft-light;
-				background-clip: text;
-			}
-		}
-	}
+    iframe {
+      flex: 1;
+      width: 100%;
+      border: none;
+      min-height: 220px;
+    }
+  }
 </style>
