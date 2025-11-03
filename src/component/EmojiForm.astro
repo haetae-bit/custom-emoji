@@ -143,14 +143,14 @@ const errors = isInputError(result?.error) ? result.error.fields : {};
   form {
     margin-top: var(--size-2);
     display: flex;
-    flex-flow: column nowrap;
+    flex-direction: column;
     gap: var(--size-4);
     container: form / inline-size;
   }
   
   fieldset {
     display: flex;
-    flex-flow: column nowrap;
+    flex-direction: column;
     gap: var(--size-3);
     border: var(--border-size-2) solid var(--border-color);
     border-radius: var(--radius-2);
@@ -165,8 +165,9 @@ const errors = isInputError(result?.error) ? result.error.fields : {};
     grid-auto-flow: row;
     gap: var(--size-1);
     
-    > :is(label, input, p) {
+    > * {
       width: 100%;
+      max-width: calc(100cqw - (var(--size-3) * 2) - var(--border-size-2));
       contain: layout inline-size;
     }
   }
@@ -248,13 +249,12 @@ const errors = isInputError(result?.error) ? result.error.fields : {};
 
   input.addEventListener("change", (e) => {
     clearImage();
-
+    
     const target = e.target as HTMLInputElement;
     const file = target.files?.item(0);
     
     if (file && IMAGE_TYPES.includes(file.type)) {
       const image = document.createElement("img");
-      console.log(file);
       image.src = URL.createObjectURL(file);
       image.alt = file.name;
       preview?.appendChild(image);
@@ -269,7 +269,7 @@ const errors = isInputError(result?.error) ? result.error.fields : {};
 
   function clearImage() {
     while (preview?.firstChild) {
-      const image = preview.getElementsByTagName("img").item(0);
+      const image = preview.getElementsByTagName("img")[0];
       if (image) {
         image.addEventListener("load", () => {
           URL.revokeObjectURL(image.src);

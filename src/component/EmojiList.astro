@@ -66,19 +66,21 @@ const emojiSets = response?.data.records ?? [];
           
           {emojis.map(emoji => {
             const url = new URL("/xrpc/com.atproto.sync.getBlob", pdsUrl);
+            let alt: string | undefined;
             url.searchParams.set("did", did);
-            if (emoji.embeds) {
-              // url.searchParams.set("cid", emoji.embeds[0].image.ref);
-              // @ts-expect-error the type is expecting a blob when the result is actually a ref here
-              url.searchParams.set("cid", emoji.embeds[0].ref);
-            } else {
+            if (!emoji.embeds) {
               // @ts-expect-error this is old behavior
               url.searchParams.set("cid", emoji.image.image.ref);
+              // @ts-expect-error this is old behavior
+              alt = emoji.image.alt;
+            } else {
+              // @ts-expect-error the type is expecting a blob when the result is actually a ref here
+              url.searchParams.set("cid", emoji.embeds[0].image.ref);
+              alt = emoji.embeds[0].alt;
             }
-            // emoji.embeds[0].alt
             return (
               <article class="card">
-                <Image src={url.toString()} alt={emoji.fallback ?? emoji.shortcode} inferSize={true} />
+                <Image src={url.toString()} alt={alt ?? emoji.fallback ?? emoji.shortcode} inferSize={true} />
                 <pre>:{emoji.shortcode}:</pre>
                 {(emoji.description || emoji.fallback) && (
                   <p>{emoji.description ?? emoji.fallback}</p>
@@ -102,7 +104,7 @@ const emojiSets = response?.data.records ?? [];
       )
     })}
   </select> */}
-  <iframe title="Preview window for Astrolabe" src="https://astrolabe-editor.netlify.app/iframe.html?args=&globals=&id=astrolabe-emoji--editable&viewMode=story"></iframe>
+  <iframe title="Preview window for Astrolabe" src="https://astrolabe-editor.netlify.app/iframe.html?args=&globals=&id=astrolabe-emoji--editable-multiple-sets&viewMode=story"></iframe>
 </section>
 
 <style>
