@@ -1,7 +1,0 @@
-onlyBuiltDependencies:
-  - core-js
-  - esbuild
-  - sharp
-
-shamefullyHoist: true
-# strictPeerDependencies: false

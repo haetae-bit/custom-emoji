@@ -1,0 +1,50 @@
+on:
+  push:
+    branches:
+      - main
+    # maybe TBA: also on pull requests
+
+name: Deploy emoji site to FujoCoded server
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@v4
+
+      - name: install nix
+        uses: DeterminateSystems/nix-installer-action@main
+
+      - name: build site
+        run: |
+          nix-shell -p "nodejs_22" --run "npm install"
+          nix-shell -p "nodejs_22" --run "npm run build"
+          ls -la
+
+      - name: upload site
+        uses: actions/upload-artifact@v4
+        with:
+          path: |
+            dist/
+            package.json
+            package-lock.json
+
+  deploy-site:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: artifact
+      - run: ls -la
+
+      - name: deploy site
+        uses: easingthemes/ssh-deploy@main
+        with:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          ARGS: "-avz"
+          SOURCE: "./"
+          REMOTE_HOST: ${{ vars.REMOTE_HOST }}
+          REMOTE_USER: ${{ vars.REMOTE_USER }}
+          TARGET: ${{ vars.REMOTE_DEST }}

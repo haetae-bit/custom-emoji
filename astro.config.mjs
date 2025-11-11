@@ -20,7 +20,7 @@ export default defineConfig({
   vite: {
     build: {
       rollupOptions: {
-        external: "astro:db"
+        external: ["astro:db"]
       }
     }
   },
