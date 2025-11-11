@@ -9,11 +9,21 @@ export default defineConfig({
   adapter: node({ mode: "standalone" }),
   integrations: [
     authproto({
+      driver: {
+        name: "memory"
+      },
       scopes: {
         genericData: true,
       }
     }),
   ],
+  vite: {
+    build: {
+      rollupOptions: {
+        external: "astro:db"
+      }
+    }
+  },
   experimental: {
     fonts: [
       {
@@ -30,7 +40,7 @@ export default defineConfig({
           weight: 400,
           src: ["./src/assets/fonts/Galmuri9.woff2"],
         }],
-        fallbacks: ["system-ui", "sans-serif"],
+        fallbacks: ["Unifont EX", "Unifont", "system-ui", "sans-serif"],
       },
       {
         provider: "local",
