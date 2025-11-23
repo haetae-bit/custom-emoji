@@ -9,8 +9,10 @@ export default defineConfig({
   adapter: node({ mode: "standalone" }),
   integrations: [
     authproto({
+      applicationDomain: "https://emoji.fruity.city",
+      applicationName: "emoji uploader",
       driver: {
-        name: "memory"
+        name: "fsLite"
       },
       scopes: {
         genericData: true,
@@ -20,7 +22,7 @@ export default defineConfig({
   vite: {
     build: {
       rollupOptions: {
-        external: ["astro:db"]
+        external: ["astro:db", "unstorage/drivers/fsLite"]
       }
     }
   },
